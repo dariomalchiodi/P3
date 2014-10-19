@@ -1,0 +1,60 @@
+\documentclass{article}
+%\usepackage{t1enc}
+\usepackage[latin1]{inputenc}
+\usepackage[italian]{babel}
+%\usepackage[subscriptcorrection,mtbold]{mathtime}
+\usepackage{mathrsfs}
+\usepackage{alltt,theorem,xspace}
+\usepackage{bm,amsmath,amssymb}
+
+\advance\textwidth by 4cm
+\advance\oddsidemargin by -2cm
+\advance\evensidemargin by -2cm
+
+\advance\textheight by 2cm
+\advance\topmargin by -1cm
+
+\title{Sistemi per l'elaborazione dell'informazione 2}
+\date{}
+
+\begin{document}
+\shorthandoff{"}
+
+\maketitle
+
+\section*{Serializzazione logica}
+
+A volte il formato standard di serializzazione generato da Java non \`e il pi\`u adatto. Questo \`e vero, in particolare, se lo stato interno di un oggetto presenta ridondanza.
+
+Per prendere coscienza del problema, provate a estendere \texttt{java.util.HashMap} in modo che fornisca un servizio di accesso invertito: di solito, una \texttt{Map} permette, tramite il metodo \texttt{get()}, di ottenere il valore associato a una chiave. Dovete aggiungere un metodo \texttt{lookup()} che permetta di ottenere una chiave, dato un valore. Per fare questo, estendete \texttt{HashMap} in modo che contenga una \emph{seconda} mappa in cui inserite le coppie chiave/valore in ordine invertito (per ottenere questo effetto \`e necessario sovrascrivere \texttt{put()} e \texttt{clear()}). In pratica, state implementando una biiezione, e dovete fare in modo che le invocazioni di \texttt{put()} non violino le propriet\`a matematiche corrispondenti. Potete lanciare una \texttt{IllegalStateException} per segnalare una condizione di errore.
+
+Ovviamente, se rendete la nuova classe serializzabile verranno salvate inutilmente \emph{due} copie delle coppie chiave/valore: una nella \texttt{HashMap} che state estendendo, e una nella mappa di inversione. Per ovviare a questo inconveniente, dovete rendere la mappa di inversione transiente, e modificare \texttt{readObject()} in modo che la ricostruisca enumerando le coppie chiave/valore della mappa principale (dovete utilizzare il metodo \texttt{entrySet()} per enumerare le coppie, e reinserirle in una nuova mappa di inversione con chiave e valore scambiati).
+
+Realizzate un metodo \texttt{main()} o una classe di test in cui istanziate la classe che avete creato, la popolate con alcune associazioni, ne stampate il contenuto (utilizzando un metodo \texttt{toString()} opportunamente creato), serializzate l'oggetto ottenuto, lo deserializzate e stampate il contenuto dell'oggetto che ottenete, verificando che gli output coincidono.
+
+Create infine un'applicazione che visualizzi una biiezione all'interno di una finestra contenente i seguenti widget:
+
+\begin{itemize}
+\item una lista che visualizzi le coppie (chiave, valore) contenute nella biiezione
+\item un pulsante che permetta di rimuovere dalla biiezione le coppie (chiave, valore) selezionate nella lista;
+\item un pulsante che permetta di rimuovere dalla biiezione tutte le coppie in essa contenute;
+\item due caselle di testo deputate a contenere una chiave e un valore, affiancate a un pulstante che permetta di inserire una nuova coppia nella biiezione, utilizzando i valori inseriti nelle caselle di testo.
+\end{itemize}
+
+Scegliete un opportuno dispositore per inserire i widget nella shell e gestite la segnalazione di errore nel caso in cui l'inserimento di una nuova coppia violi l'integrit\`a della biiezione (usando magari una \texttt{MessageBox}). Aggiungete poi alla vostra applicazione un menu che permetta di serializzare e deserializzare la biiezione (quando deserializzate eliminate l'istanza precedente di \texttt{BijectiveHashMap}). I pi\`u arditi possono anche verificare i casi specifici in cui si carica una nuova biiezione senza aver salvato quella corrente, avvertendo l'utente della potenziale perdita di dati e offrendo la possibilit\`a di salvare la biiezione corrente prima di procedere. In tal caso sar\`a utile utilizzare il  disegno \emph{command} e un \texttt{MessageBox} opportuno.
+
+\section*{\texttt{readResolve()}}
+
+A volte non \`e possibile utilizzare in assoluto l'oggetto generato implicitamente dal sistema di serializzazione. (Un tipico caso \`e quello dei singoletti che vedremo in una delle prossime lezioni).
+
+Per risolvere questi problemi, Java fornisce il metodo \texttt{readResolve()} (oltre alla sua controparte \texttt{writeReplace()}, che per\`o non vi servir\`a in questo esercizio). Se viene definito un metodo
+\begin{verbatim}
+private Object readResolve()
+\end{verbatim}
+all'interno di una classe, esso verr\`a invocato al momento della deserializzazione (e \texttt{this} sar\`a l'oggetto deserializzato). Il metodo restituisce un oggetto che sar\`a considerato il risultato della deserializzazione. Per esempio, il metodo pu\`o decidere di buttare via la nuova istanza (cio\`e \texttt{this}) e restituire un altro oggetto.
+
+
+Riscrivete la soluzione del primo esercizio utilizzando il metodo \texttt{readResolve}.
+
+\end{document}
+

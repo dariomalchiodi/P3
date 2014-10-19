@@ -1,0 +1,116 @@
+\documentclass{article}
+%\usepackage{t1enc}
+%\usepackage[latin1]{inputenc}
+\usepackage[italian]{babel}
+%\usepackage[subscriptcorrection,mtbold]{mathtime}
+\usepackage{mathrsfs}
+\usepackage{alltt,theorem,xspace}
+\usepackage{bm,amsmath,amssymb}
+
+\advance\textwidth by 4cm
+\advance\oddsidemargin by -2cm
+\advance\evensidemargin by -2cm
+
+\advance\textheight by 2cm
+\advance\topmargin by -1cm
+
+
+\title{Sistemi per l'Elaborazione dell'Informazione 2}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Intervalli}
+
+Lo scopo di questa esercitazione \`e la creazione di tre implementazioni di una
+classe che rappresenta intervalli di interi. Ogni intervallo è definito da due
+estremi interi, quello sinistro e quello destro, che sono inclusi
+nell'intervallo. In tutte le implementazioni le istanze sono immutabili.
+
+
+\subsection*{Prima implementazione (elementare)}
+
+La prima implementazione, che chiameremo \texttt{BasicInterval}, ha attributi \texttt{left} e \texttt{right} pubblici e finali, e due costruttori, uno che chiede entrambi gli intervalli mentre l'altro chiede solo un punto. Il metodo \texttt{length()} deve fornire il
+numero di interi contenuto nell'intervallo. Il metodo \texttt{contains(int)}
+deve restituire \texttt{true} se l'argomento cade nell'intervallo,
+\texttt{false} altrimenti. Ricordatevi di implementare ragionevolmente
+\texttt{equals()} e \texttt{hashCode()} (potete ad esempio fare riferimento al terzo capitolo di J. Bloch, \emph{Effective Java}, disponibile on-line all'indirizzo \texttt{http://java.sun.com/developer/Books/effectivejava/Chapter3.pdf}).
+
+\`E consigliabile creare un'opportuna interfaccia \texttt{Interval} che verr\`a implementata da tutte le classi rappresentanti intervalli che andremo a realizzare durante questa esercitazione (vi semplificher\`a molto la risoluzione dell'ultimo esercizio); \`e anche consigliabile dividere implementazioni differenti in package differenti.
+
+
+\subsection*{Seconda implementazione (con metodi di fabbricazione e pesi piuma
+  per gli intervalli di lunghezza uno)}
+
+Nella seconda implementazione, che chiameremo \texttt{EnhancedInterval}, i costruttori sono privati e sostituiti da due
+metodi di fabbricazione. La classe costruisce all'inizializzazione tutti gli
+intervalli singoletto nonnegativi fino a una costante \texttt{MAX\_FLYWEIGHT}, e
+li memorizza in un vettore. I metodi di fabbricazione devono restituire le
+copie memorizzate ogni volta che questo \`e possibile.
+
+\subsection*{Terza implementazione (con metodi di fabbricazione che
+  restituiscono sottoclassi specifiche, pesi piuma per gli intervalli
+  di lunghezza uno e un singoletto per l'intervallo vuoto)}
+
+La terza implementazione spinge al massimo l'ottimizzazione dello spazio. Per
+ottenere questo scopo, aumentiamo l'astrazione: gli estremi vengono ottenuti
+tramite i metodi \texttt{left()} e \texttt{right()}. La classe principale, che chiameremo \texttt{AbstractInterval}, diventa ora astratta.
+
+Vogliamo inoltre avere la possibilit\`a di rappresentare l'intervallo
+vuoto. L'intervallo vuoto ha lunghezza zero, non contiene nessun intero e
+lancia un'eccezione \texttt{UnsupportedOperationException} se si cercano di
+sapere i suoi estremi.
+
+La classe \texttt{AbstractInterval} implementa 
+solo alcuni dei metodi (\texttt{length()} e \texttt{contains(int)} rappresentano ovvi esempi, ma potete anche ragionare su \texttt{equals()}), lasciando i rimanenti astratti. A questo punto, ci sono tre sottoclassi concrete di
+\texttt{AbstractInterval}:
+\begin{enumerate}
+\item \texttt{EmptyInterval}, privo di attributi, che rappresenta l'intervallo
+  vuoto. La classe va implementata come un singoletto (non ha senso avere pi\`u
+  intervalli vuoti).
+\item \texttt{PointInterval}, con un solo attributo \texttt{point}, che
+  rappresenta gli intervalli di lunghezza uno. Questa classe deve occuparsi
+  anche della gestione dei pesi piuma.
+\item \texttt{FullInterval}, con attributi \texttt{left} e \texttt{right}, che
+  rappresenta gli intervalli rimanenti.
+\end{enumerate}
+Tutte le classi devono ovviamente implementare \texttt{left()} e
+\texttt{right()}. Inoltre, devono fornire dei metodi di fabbricazione con
+visibilit\`a limitata al pacchetto (opzionalmente, \texttt{EmptyInterval} pu\`o
+rendere accessibile la sua sola istanza in un campo statico finale con
+visibilit\`a di pacchetto inizializzato direttamente). Notate che ci vuole un po'
+di cura nell'implementazione di \texttt{equals()} e \texttt{hashCode()}.
+
+Infine, \texttt{Interval} conterr\`a i metodi (statici) di
+fabbricazione generici per gli intervalli.
+Potete scegliere i metodi in vario modo, ad esempio
+chiamandoli \texttt{getInstance(int,int)}, \texttt{getInstance(int)} e
+\texttt{getInstance()} (per l'intervallo vuoto), oppure in modo pi\`u creativo, come 
+\texttt{getInterval(int,int)}, \texttt{getPointInterval(int)} e
+\texttt{getEmptyInterval()}. I metodi di fabbricazione restituiscono sempre un
+\texttt{Interval}.
+
+\subsection*{Quarta implementazione (tramite fabbrica astratta che
+contiene metodi di fabbricazione, e pu\`o venire istanziata
+in almeno due forme)}
+
+La quarta implementazione cerca di essere, per quanto possibile, flessibile ed
+efficiente, lasciando all'utente la scelta dell'implementazione. Dovete dichiarare
+una fabbrica astratta di intervalli (cio\`e un'interfaccia) che contiene i metodi di fabbricazione.
+Dovete quindi implementare almeno due diverse fabbriche concrete (per esempio, con e senza
+pesi piuma, ma se avete seguito i suggerimenti dati alla fine del primo esercizio dovreste riuscire a riutilizzare le tre implementazioni fatte finora). Le fabbriche concrete devono essere restituite da un metodo \texttt{getFactory(String)}, da inserire in una utility (cio\`e una classe che contiene esclusivamente metodi e attributi statici, come per esempio accade con \texttt{Math}),
+a cui viene fornito un nome simbolico (che dovreste  mettere in una stringa pubblica, statica e finale). Verificate anche se abbia senso oppure no implementare le fabbriche concrete come singoletti.
+
+Per verificare che tutto avviene come si deve, scrivete un semplice \texttt{main()} che
+chiede all'utente il nome di una fabbrica, la istanza, crea i tre tipi fondamentali di intervalli e
+ne stampa la classe implementante (usate \texttt{getClass()} sugli oggetti restituiti dalla fabbrica),
+in modo da controllare che la creazione degli oggetti sia andata come vi aspettavate.
+
+\subsection*{Parte facoltativa}
+Utilizzando UML scrivete i diagrammi delle classi  e i diagrammi di sequenza per tutti gli esercizi risolti. Scrivete la documentazione JavaDoc per tutte le classi e i
+metodi coinvolti, evidenziando gli invarianti. Infine, scrivete dei test di
+funzionamento per tutte le classi coinvolte.
+
+\end{document}
